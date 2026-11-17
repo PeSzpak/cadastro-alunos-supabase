@@ -1,5 +1,7 @@
 # Aula 08: Flutter + Supabase, cadastro de alunos
 
+Disciplina **Tecnologias Móveis e Híbridas** (ADS, Senac São José dos Pinhais). Os demais exercícios da matéria estão em [flutter-class](https://github.com/PeSzpak/flutter-class).
+
 Formulário com nome, e-mail, curso e semestre que grava na tabela `public.alunos` do Supabase pelo pacote `supabase_flutter`.
 
 - **Validação no app antes do envio:** campos vazios, e-mail inválido e semestre fora de 1 a 12.
