@@ -11,6 +11,55 @@ Formulário com nome, e-mail, curso e semestre que grava na tabela `public.aluno
 - **Extensão 2:** e-mail duplicado bloqueado no banco por um índice único em `lower(email)`; o app mostra "Este e-mail já está cadastrado."
 - **Extensão 3:** como proteger em produção, abaixo.
 
+| Validação | Cadastro aceito | Alunos cadastrados |
+|---|---|---|
+| <img src="prints/01_validacao.png" width="240" alt="Formulário com e-mail inválido e semestre 15 marcados em vermelho"> | <img src="prints/02_sucesso.png" width="240" alt="Aviso de aluno cadastrado com sucesso"> | <img src="prints/03_lista.png" width="240" alt="Lista com dois alunos fictícios"> |
+
+As telas foram geradas pelos testes de golden (`prints/prints_test.dart`) com o repositório em memória e dados fictícios, sem tocar no Supabase.
+
+## Como funciona
+
+```mermaid
+flowchart LR
+  F[CadastroTela<br>formulário] -->|validacao.dart| V{campos ok?}
+  V -- não --> E[erro no campo]
+  V -- sim --> R[AlunoRepositorio]
+  R --> S[(Supabase<br>public.alunos)]
+  S -- código Postgrest<br>23505, 42501, 42P01, 22P02 --> M[mensagem traduzida]
+  L[AlunosTela] -->|listar| R
+```
+
+O app depende só da interface `AlunoRepositorio` (`cadastrar` e `listar`). Em produção ela é o `SupabaseAlunoRepositorio`; nos testes, uma versão em memória. Os erros do Postgrest viram mensagens em português (e-mail repetido, RLS, tabela inexistente, tipo errado, sem internet).
+
+```mermaid
+erDiagram
+  alunos {
+    bigint id PK "identity"
+    text nome
+    text email "único em lower(email)"
+    text curso
+    integer semestre "1 a 12 (política RLS)"
+    timestamptz criado_em "default now()"
+  }
+```
+
+**Stack:** Flutter (Material 3), Dart, `supabase_flutter`, Postgres com RLS.
+
+## Estrutura
+
+```
+lib/
+  main.dart               inicializa o Supabase a partir do --dart-define
+  cadastro_tela.dart      formulário e envio
+  alunos_tela.dart        listagem (SELECT)
+  validacao.dart          regras de nome, e-mail e semestre
+  aluno.dart              modelo + toMap/fromMap
+  aluno_repositorio.dart  interface e implementação Supabase
+supabase/alunos.sql       tabela, índice único e políticas RLS
+prints/                   capturas (testes de golden)
+test/widget_test.dart     testes com repositório em memória
+```
+
 ## Como rodar
 
 1. No SQL Editor do Supabase, rode `supabase/alunos.sql`.
